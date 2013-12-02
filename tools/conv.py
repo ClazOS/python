@@ -41,30 +41,47 @@ def length(n, frm):
 
 def volume(n, frm):
     "REPLACE THIS CODE WITH YOUR VOLUME CONVERSION METHOD"
-    if frm == 'cubic_meters':
-        ml
-        cubic_in
-        gal
-        return[ml,cubic_in,gal]
-
-    if frm == 'milliliters':
-        cubic_m
-        cubic_in
-        gal
-        return[cubic_m,cubic_in,gal]
-
-    if frm == 'cubic_inches':
-        cubic_m
-        ml
-        gal
-        return[cubic_m,ml,gal]
-
-    if frm == 'gallons':
-        cubic_m
-        ml
-        cubic_in
-        return[cubic_m,ml,cubic_in]
-
+    res = [] 
+    if frm == 'cubic_meter': 
+        milliliters = n * 1000000 
+        cubic_inches = n * 61023.74 
+        gallons = n * 264.17 
+        res.append(milliliters)
+        res.append(cubic_inches)
+        res.append(gallons)
+        return res 
+     
+    if frm == 'milliliters': 
+        cubic_meters = n * 0.000001 
+        cubic_inches = n * 0.061 
+        gallons = n * 0.00026 
+        res.append(cubic_meters)
+        res.append(cubic_inches)
+        res.append(gallons)
+        return res 
+     
+    if frm == 'cubic_inches': 
+        cubic_meters = n * 0.000016 
+        milliliters = n * 16.38 
+        gallons = n * 0.0043 
+        res.append(cubic_meters)
+        res.append(milliliters)
+        res.append(gallons)
+        return res 
+     
+    if frm == 'gallons': 
+        cubic_meters = n * 0.0037 
+        milliliters = n * 3785.4 
+        cubic_inches = n * 231 
+        res.append(cubic_meters)
+        res.append(milliliters)
+        res.append(cubic_inches)
+        return res 
 def weight(n, frm):
     "REPLACE THIS CODE WITH YOUR OWN WEIGHT CONVERSION METHOD"
-
+    if frm == 'pounds':
+        return [0.45 * n , 16 * n]
+    if frm == 'kilograms':
+        return [n * 2.2 , n * 35.27]
+    if frm == 'ounces':
+        return [n * 0.0625 , n * 0.028]
