@@ -19,6 +19,7 @@ color4 = "Blue"
 color5 = "Gray"
 color6 = "Black"
 score_table = {0: 0, 1: 1, 2: 3, 3: 6, 4: 10, 5: 15, 6: 21}
+last_turn = False
 
 def deck_regen(deck):
     '''Takes a deck and restores it to the initial state to begin a new game. Returns the new deck.'''
@@ -84,7 +85,7 @@ def print_board(slots, deck, cards_player, cards_CPU1, cards_CPU2):
             print(card, "\n")
 
 
-def draw_card(deck, slots):
+def human_draw_card(deck, slots, last_turn):
     '''Lets human player draw a card, look at it, and select a slot to put it'''
     # First, check if remaining slots are not full (3 cards). If so, draw_card returns the deck and slots unchanged.
     test = 0
@@ -99,6 +100,10 @@ def draw_card(deck, slots):
     # Now that we now we are good
     else:
         card = deck.pop(0)
+        if card == "Last turn":
+            print("OMG, this is the last turn!")
+            last_turn = True
+            card = deck.pop(0)
         print("The card you drew is ",card)
         print("Where do you want to put it?")
         print_board(slots, deck, cards_player, cards_CPU1, cards_CPU2)
@@ -113,9 +118,9 @@ def draw_card(deck, slots):
             choice = input("Choose a slot to put your card: ")
         choice = int(choice) - 1
         slots[choice].append(card)
-        return deck, slots
+        return deck, slots, last_turn
 
-def pick_slot(slots, cards_player):
+def human_pick_slot(slots, cards_player):
     '''Lets human player pick a slot of cards, and add these cards to its cards. Updates slots'''
     choice = ''
     choices = []
@@ -193,15 +198,78 @@ def ia_pick_or_draw(slots,cards):
             return "I pick."
     return "I draw."
 
+def ia_pick(slots, cards):
+    '''Used to let ia pick the best slot, given his current cards. Computes the would-be score for each slot added to its current cards, and returns its cards and the new state of the slots.'''
+    choices = []
+    # todo: what if an empty slot gives the best score? Can't pick it by the rules! For now, assign a very low negative value to this case. Maybe find something more elegant later.
+    for slot in slots:
+        if slot == []:
+            choices.append(-999)
+        else:
+            choices.append(compute_score(slot + cards))
+    # choice is the index of the slot that gives the highest score with current cards hold.
+    choice = choices.index(max(choices))
+    print("I pick slot #",choice + 1)
+    cards += slots[choice]
+    slots.pop(choice)
+    return slots, cards
 
+def ia_draw(slots, deck, cards, last_turn):
+    '''Used to let ia draw a card, and add it to a legal non full slot in slots. IA will chose a slot that would net him the best score if taken later, that's why I pass a list of cards hold at this point to compute score on them'''
+    card = deck.pop(0)
+    if card == "Last turn":
+        print("OMG, this is the last turn!")
+        last_turn = True
+        card = deck.pop(0)
+    print(" ".join(["The card is", card]))
+    choices = []
+    for slot in slots:
+        if len(slot) >= 3:
+            choices.append(-999)
+        else:
+            choices.append(compute_score(slot + cards))
+    # choice is the index of the slot that gives the highest score with current cards hold.
+    choice = choices.index(max(choices))
+    # let's add the card to this slot
+    print("I put it on slot #", choice + 1)
+    slots[choice].append(card)
+    return slots, deck, last_turn
+
+def human_pick_or_draw(slots, deck):
+    '''Prompts player to pick a slot of draw a card'''
+    # First check if all slots are either full or empty, and return the only legal move.
+    all_slots_empty = True
+    all_slots_full = True
+    for i in range(0,len(slots)):
+        if slots[i] != []:
+            all_slots_empty = False
+        if len(slots[i]) < 3:
+            all_slots_full = False
+    if all_slots_empty:
+        return "I draw."
+    if all_slots_full:
+        return "I pick."
+    choice = ''
+    while choice not in ['p','d']:
+        choice = input("Do you want to [p]ick a slot or [d]raw a card? ")
+    if choice == 'd':
+        return "I draw."
+    else:
+        return "I pick."
+
+
+    
 # Debug zone
-#deck, cards_player, cards_CPU1, cards_CPU2 = game_start(deck, cards_player, cards_CPU1, cards_CPU2)
+deck, cards_player, cards_CPU1, cards_CPU2 = game_start(deck, cards_player, cards_CPU1, cards_CPU2)
 #print(deck)
-#slots = new_turn(num_players, slots)
-#print_board(slots, deck, cards_player, cards_CPU1, cards_CPU2)
-#deck, slots = draw_card(deck, slots)
+slots = new_turn(num_players, slots)
+print_board(slots, deck, cards_player, cards_CPU1, cards_CPU2)
+deck, slots, last_turn = human_draw_card(deck, slots, last_turn)
 #print(slots)
 #slots, cards_player = pick_slot(slots,cards_player)
 #print(compute_score(cards_player))
 #print(compute_score(["Green","Green","Red","Red","Red","Red","Red","Red","Red","Green","Green","Green","Green","Joker","+2"]))
-print(ia_pick_or_draw([[1,2,3],["Green","Green","Red"],[1,2,3]],["Green"]))
+#print(ia_pick_or_draw([[1,2,3],["Green","Green","Red"],[1,2,3]],["Green"]))
+#print(ia_pick([[],["Green","Jocker","+2"],["Green","Green","Red"]],["Green"]))
+#print(ia_draw([[],["Green","+2"],["Green","Green"]],deck,["Green"]))
+print(human_pick_or_draw(slots, deck))
